@@ -6,11 +6,23 @@ use rand::{
     thread_rng,
 };
 
+use self::set::Set;
+
+mod set;
+
 #[derive(Default)]
 pub struct Grid(pub [[u8; 9]; 9]);
 
 pub struct Solver {
     pub grid: [[Node; 9]; 9],
+}
+
+impl Default for Solver {
+    fn default() -> Self {
+        let grid: [[Node; 9]; 9] =
+            std::array::from_fn(|row| std::array::from_fn(|col| Node::new(row, col)));
+        Self { grid }
+    }
 }
 
 pub struct Node {
@@ -20,8 +32,6 @@ pub struct Node {
     col: usize,
     blk: usize,
 }
-
-struct Set([bool; 9], usize);
 
 impl From<Solver> for Grid {
     fn from(value: Solver) -> Self {
@@ -71,12 +81,6 @@ impl Grid {
     }
 }
 
-impl Default for Set {
-    fn default() -> Self {
-        Self([true; 9], 9)
-    }
-}
-
 impl Node {
     fn new(row: usize, col: usize) -> Self {
         Self {
@@ -86,14 +90,6 @@ impl Node {
             col,
             blk: 3 * (row / 3) + col / 3,
         }
-    }
-}
-
-impl Default for Solver {
-    fn default() -> Self {
-        let grid: [[Node; 9]; 9] =
-            std::array::from_fn(|row| std::array::from_fn(|col| Node::new(row, col)));
-        Self { grid }
     }
 }
 
@@ -247,61 +243,6 @@ impl Node {
         self.remind.add(value);
         if self.value > 0 {
             self.value = 0;
-        }
-    }
-}
-
-impl Set {
-    fn set(&mut self, value: u8) {
-        self.0 = [false; 9];
-        self.1 = 0;
-        self.add(value);
-    }
-    fn contains(&self, value: &u8) -> bool {
-        self.0[*value as usize - 1]
-    }
-    fn remove(&mut self, value: u8) -> Option<()> {
-        if self.contains(&value) {
-            self.0[value as usize - 1] = false;
-            self.1 -= 1;
-            Some(())
-        } else {
-            None
-        }
-    }
-
-    fn add(&mut self, value: u8) -> Option<()> {
-        if !self.contains(&value) {
-            self.0[value as usize - 1] = true;
-            self.1 += 1;
-            Some(())
-        } else {
-            None
-        }
-    }
-
-    fn size(&self) -> usize {
-        self.1
-    }
-
-    fn get(&self) -> Vec<u8> {
-        self.0
-            .iter()
-            .enumerate()
-            .filter(|value| *value.1)
-            .map(|(value, _)| value as u8 + 1)
-            .collect()
-    }
-
-    fn find_only(&self) -> Option<u8> {
-        if self.size() == 1 {
-            self.0
-                .iter()
-                .enumerate()
-                .find(|(_value, item)| **item)
-                .map(|value| value.0 as u8 + 1)
-        } else {
-            None
         }
     }
 }
