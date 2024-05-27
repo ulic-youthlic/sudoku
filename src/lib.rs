@@ -10,7 +10,7 @@ use rand::{
 pub struct Grid(pub [[u8; 9]; 9]);
 
 pub struct Solver {
-    pub grid: Vec<Vec<Node>>,
+    pub grid: [[Node; 9]; 9],
 }
 
 pub struct Node {
@@ -91,9 +91,8 @@ impl Node {
 
 impl Default for Solver {
     fn default() -> Self {
-        let grid = (0..=8)
-            .map(|row| (0..=8).map(|col| Node::new(row, col)).collect())
-            .collect();
+        let grid: [[Node; 9]; 9] =
+            std::array::from_fn(|row| std::array::from_fn(|col| Node::new(row, col)));
         Self { grid }
     }
 }
@@ -138,7 +137,6 @@ impl Solver {
             None
         }
     }
-
     pub fn search(&mut self) {
         let mut solution_num_needed = 1;
         let mut rng = thread_rng();
