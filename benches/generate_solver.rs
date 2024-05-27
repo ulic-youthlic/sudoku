@@ -1,6 +1,6 @@
 use sudoku::{Grid, Solver};
 
-use criterion::{criterion_group, criterion_main, Criterion};
+use criterion::{black_box, criterion_group, criterion_main, Criterion};
 
 fn benchmark_solver(c: &mut Criterion) {
     c.bench_function("generate solution", |b| {
@@ -8,7 +8,7 @@ fn benchmark_solver(c: &mut Criterion) {
             let _ = Grid::new();
         })
     });
-    let gird = Grid([
+    let grid = Grid([
         [0, 6, 0, 8, 0, 0, 0, 0, 5],
         [0, 0, 9, 0, 0, 2, 0, 0, 0],
         [0, 8, 0, 0, 6, 4, 0, 0, 7],
@@ -19,11 +19,14 @@ fn benchmark_solver(c: &mut Criterion) {
         [0, 0, 3, 0, 0, 8, 0, 0, 0],
         [1, 0, 0, 0, 0, 0, 9, 2, 0],
     ]);
-    let mut solver = Solver::new(&gird.0);
     c.bench_function("solve sudoku", |b| {
-        b.iter(|| {
-            solver.search();
-        })
+        b.iter_batched(
+            || Solver::new(black_box(&grid.0)),
+            |mut solver| {
+                solver.search();
+            },
+            criterion::BatchSize::PerIteration,
+        )
     });
 }
 
